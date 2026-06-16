@@ -1,6 +1,13 @@
 # بيانات محلية
 .env
 
+# رفع المستخدمين
+public/uploads/*
+!public/uploads/.gitkeep
+!public/uploads/avatars/
+public/uploads/avatars/*
+!public/uploads/avatars/.gitkeep
+
 # نظام
 .DS_Store
 Thumbs.db

@@ -111,3 +111,19 @@ function userInitials(string $name): string
 
     return mb_strtoupper(mb_substr($parts[0], 0, 1) . mb_substr($parts[1], 0, 1));
 }
+
+function userHandle(string $email): string
+{
+    $email = trim(strtolower($email));
+    $local = explode('@', $email)[0] ?? $email;
+    return '@' . $local;
+}
+
+function avatarUrl(?string $path): ?string
+{
+    if ($path === null || trim($path) === '') {
+        return null;
+    }
+
+    return url('/' . ltrim($path, '/'));
+}

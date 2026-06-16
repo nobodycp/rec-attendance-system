@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS users (
     timezone VARCHAR(64) NOT NULL DEFAULT 'Asia/Riyadh',
     manager_id INT UNSIGNED NULL,
     is_active TINYINT(1) NOT NULL DEFAULT 1,
+    avatar_path VARCHAR(255) NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_users_manager FOREIGN KEY (manager_id) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

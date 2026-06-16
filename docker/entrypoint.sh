@@ -30,6 +30,7 @@ if uses_mysql; then
             sleep 2
         done
         php docker/init-db.php || echo "WARNING: schema init failed."
+        php database/migrate.php || echo "WARNING: migration failed."
     ) &
 fi
 

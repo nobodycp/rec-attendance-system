@@ -37,6 +37,22 @@
         });
     });
 
+    document.addEventListener('click', function (e) {
+        var um = e.target.closest('details.rd-user-menu');
+        document.querySelectorAll('details.rd-user-menu[open]').forEach(function (openMenu) {
+            if (openMenu !== um) {
+                openMenu.removeAttribute('open');
+            }
+        });
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        document.querySelectorAll('details.rd-user-menu[open]').forEach(function (m) {
+            m.removeAttribute('open');
+        });
+    });
+
     /* Auto-dismiss alerts after 5s */
     document.querySelectorAll('.alert').forEach(function (alert) {
         setTimeout(function () {

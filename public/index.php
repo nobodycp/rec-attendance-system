@@ -39,6 +39,7 @@ require dirname(__DIR__) . '/src/AttendanceService.php';
 require dirname(__DIR__) . '/src/TaskService.php';
 require dirname(__DIR__) . '/src/ReportService.php';
 require dirname(__DIR__) . '/src/UserService.php';
+require dirname(__DIR__) . '/src/AccountService.php';
 require dirname(__DIR__) . '/src/DbDiagnostics.php';
 
 $route = $_GET['route'] ?? '/';
@@ -79,9 +80,54 @@ try {
             redirect('/login');
         })(),
 
-        $route === '/logout' => (function () {
+        $route === '/logout' => (function () use ($method) {
+            if ($method === 'POST' && !Csrf::verify($_POST['csrf_token'] ?? null)) {
+                flash('error', 'انتهت صلاحية النموذج.');
+                redirect(RoleHelper::dashboardPath(Auth::role()));
+            }
             Auth::logout();
             redirect('/login');
+        })(),
+
+        $route === '/account/settings' && $method === 'GET' => (function () {
+            Auth::requireLogin();
+            view('account/settings', ['title' => 'إعدادات الحساب']);
+        })(),
+
+        $route === '/account/password' && $method === 'POST' => (function () {
+            Auth::requireLogin();
+            if (!Csrf::verify($_POST['csrf_token'] ?? null)) {
+                flash('error', 'انتهت صلاحية النموذج.');
+                redirect('/account/settings');
+            }
+            try {
+                AccountService::changePassword(
+                    Auth::id(),
+                    $_POST['current_password'] ?? '',
+                    $_POST['new_password'] ?? '',
+                    $_POST['confirm_password'] ?? ''
+                );
+                flash('success', 'تم تحديث كلمة المرور بنجاح.');
+            } catch (Throwable $e) {
+                flash('error', $e->getMessage());
+            }
+            redirect('/account/settings');
+        })(),
+
+        $route === '/account/avatar' && $method === 'POST' => (function () {
+            Auth::requireLogin();
+            if (!Csrf::verify($_POST['csrf_token'] ?? null)) {
+                flash('error', 'انتهت صلاحية النموذج.');
+                redirect('/account/settings');
+            }
+            try {
+                AccountService::uploadAvatar(Auth::id(), $_FILES['avatar'] ?? []);
+                Auth::refreshSession();
+                flash('success', 'تم تحديث صورة الملف الشخصي.');
+            } catch (Throwable $e) {
+                flash('error', $e->getMessage());
+            }
+            redirect('/account/settings');
         })(),
 
         $route === '/health' && $method === 'GET' => (function () {

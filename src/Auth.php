@@ -21,6 +21,7 @@ class Auth
         $_SESSION['user_email'] = $user['email'];
         $_SESSION['user_role'] = $user['role'];
         $_SESSION['user_timezone'] = $user['timezone'];
+        $_SESSION['user_avatar'] = $user['avatar_path'] ?? null;
 
         return true;
     }
@@ -58,6 +59,33 @@ class Auth
     public static function name(): string
     {
         return $_SESSION['user_name'] ?? '';
+    }
+
+    public static function email(): string
+    {
+        return $_SESSION['user_email'] ?? '';
+    }
+
+    public static function avatarPath(): ?string
+    {
+        $path = $_SESSION['user_avatar'] ?? null;
+        return is_string($path) && $path !== '' ? $path : null;
+    }
+
+    public static function refreshSession(): void
+    {
+        if (!self::check()) {
+            return;
+        }
+        $user = self::user();
+        if (!$user) {
+            return;
+        }
+        $_SESSION['user_name'] = $user['name'];
+        $_SESSION['user_email'] = $user['email'];
+        $_SESSION['user_role'] = $user['role'];
+        $_SESSION['user_timezone'] = $user['timezone'];
+        $_SESSION['user_avatar'] = $user['avatar_path'] ?? null;
     }
 
     public static function requireLogin(): void
