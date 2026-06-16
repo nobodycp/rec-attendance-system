@@ -41,6 +41,20 @@
 
 في Coolify → Application → **Environment Variables**:
 
+### الطريقة الموصى بها — رابط واحد (Coolify)
+
+عند ربط MySQL بالتطبيق، Coolify يوفّر رابطاً بهذا الشكل:
+
+```env
+DATABASE_URL=mysql://mysql:PASSWORD@haov0644574ouak0covccwe2:3306/default
+```
+
+انسخ الرابط كما هو من Coolify — المشروع يستخرج تلقائياً: المستخدم، كلمة المرور، المضيف، المنفذ، واسم القاعدة.
+
+> يقبل أيضاً: `MYSQL_URL` أو `DB_URL`
+
+### الطريقة البديلة — متغيرات منفصلة
+
 ```env
 DB_DRIVER=mysql
 DB_HOST=mysql-xxxxx
@@ -48,7 +62,11 @@ DB_PORT=3306
 DB_NAME=rec_attendance
 DB_USER=rec_user
 DB_PASS=YOUR_STRONG_PASSWORD
+```
 
+### إعدادات التطبيق (مطلوبة في كلتا الحالتين)
+
+```env
 APP_NAME=جمعية مركز الإرشاد التربوي REC
 APP_URL=https://attendance.yourdomain.com
 APP_TIMEZONE=Asia/Riyadh
@@ -58,7 +76,7 @@ SETUP_ENABLED=true
 
 | المتغير | ملاحظة |
 |---------|--------|
-| `DB_HOST` | اسم خدمة MySQL في Coolify (ليس IP خارجي) |
+| `DATABASE_URL` | رابط MySQL من Coolify — **الأولوية** إذا وُجد |
 | `APP_URL` | الرابط النهائي مع `https://` |
 | `APP_DEBUG` | **يجب** أن يكون `false` في الإنتاج |
 | `SETUP_ENABLED` | `true` للإعداد الأول فقط |
@@ -115,7 +133,7 @@ SETUP_ENABLED=true
 
 | المشكلة | الحل |
 |---------|------|
-| 500 — خطأ قاعدة البيانات | تحقق من `DB_HOST` (اسم الخدمة الداخلية) وبيانات MySQL |
+| 500 — خطأ قاعدة البيانات | تحقق من `DATABASE_URL` أو `DB_HOST` وبيانات MySQL |
 | setup.php معطّل | عيّن `SETUP_ENABLED=true` مؤقتاً |
 | redirect خاطئ | تأكد أن `APP_URL` صحيح مع https |
 | health check فاشل | تحقق من اتصال MySQL — `/health` يختبر قاعدة البيانات |

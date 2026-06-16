@@ -45,10 +45,47 @@ function envBool(string $key, bool $default = false): bool
     return in_array(strtolower($value), ['1', 'true', 'yes', 'on'], true);
 }
 
-$driver = env('DB_DRIVER', 'mysql');
+/**
+ * ي parse رابط MySQL بصيغة:
+ * mysql://user:password@host:3306/database
+ */
+function parseDatabaseUrl(?string $url): ?array
+{
+    if ($url === null || trim($url) === '') {
+        return null;
+    }
 
-return [
-    'db' => [
+    $parsed = parse_url(trim($url));
+    if ($parsed === false || !isset($parsed['host'])) {
+        return null;
+    }
+
+    $scheme = strtolower($parsed['scheme'] ?? '');
+    if (!in_array($scheme, ['mysql', 'mysqli'], true)) {
+        return null;
+    }
+
+    $database = isset($parsed['path']) ? ltrim($parsed['path'], '/') : '';
+    if ($database === '') {
+        $database = 'default';
+    }
+
+    return [
+        'driver' => 'mysql',
+        'host' => $parsed['host'],
+        'port' => isset($parsed['port']) ? (int) $parsed['port'] : 3306,
+        'name' => rawurldecode($database),
+        'user' => isset($parsed['user']) ? rawurldecode((string) $parsed['user']) : '',
+        'pass' => isset($parsed['pass']) ? rawurldecode((string) $parsed['pass']) : '',
+        'charset' => 'utf8mb4',
+    ];
+}
+
+function resolveDatabaseConfig(): array
+{
+    $driver = env('DB_DRIVER', 'mysql');
+
+    $db = [
         'driver' => $driver,
         'sqlite_path' => env('DB_SQLITE_PATH', dirname(__DIR__) . '/database/attendance.sqlite'),
         'host' => env('DB_HOST', 'localhost'),
@@ -57,7 +94,19 @@ return [
         'user' => env('DB_USER', 'root'),
         'pass' => env('DB_PASS', ''),
         'charset' => 'utf8mb4',
-    ],
+    ];
+
+    $dbUrl = env('DATABASE_URL') ?? env('MYSQL_URL') ?? env('DB_URL');
+    $fromUrl = parseDatabaseUrl($dbUrl);
+    if ($fromUrl !== null) {
+        $db = array_merge($db, $fromUrl);
+    }
+
+    return $db;
+}
+
+return [
+    'db' => resolveDatabaseConfig(),
     'app' => [
         'name' => env('APP_NAME', 'جمعية مركز الإرشاد التربوي REC'),
         'url' => rtrim(env('APP_URL', 'http://localhost:8080'), '/'),

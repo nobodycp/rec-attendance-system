@@ -27,7 +27,8 @@ docker compose up -d --build
 
 | المتغير | الوصف |
 |---------|--------|
-| `DB_HOST` | عنوان MySQL |
+| `DATABASE_URL` | رابط MySQL كامل (Coolify) — `mysql://user:pass@host:3306/db` |
+| `DB_HOST` | عنوان MySQL (بديل عند عدم وجود DATABASE_URL) |
 | `DB_NAME` | اسم قاعدة البيانات |
 | `DB_USER` / `DB_PASS` | بيانات الاتصال |
 | `APP_URL` | رابط الموقع (https://...) |
