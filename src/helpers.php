@@ -89,7 +89,14 @@ function roleLabel(string $role): string
 
 function clientIp(): string
 {
-    return $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+    $forwarded = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? '';
+    if ($forwarded !== '') {
+        $parts = array_map('trim', explode(',', $forwarded));
+
+        return $parts[0] !== '' ? $parts[0] : '0.0.0.0';
+    }
+
+    return $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
 }
 
 function currentRoute(): string
@@ -126,4 +133,50 @@ function avatarUrl(?string $path): ?string
     }
 
     return url('/' . ltrim($path, '/'));
+}
+
+function passwordMinLength(): int
+{
+    return UserService::MIN_PASSWORD_LENGTH;
+}
+
+function paginate(array $items, int $page, int $perPage = 15): array
+{
+    $total = count($items);
+    $page = max(1, $page);
+    $pages = max(1, (int) ceil($total / $perPage));
+    $page = min($page, $pages);
+    $offset = ($page - 1) * $perPage;
+
+    return [
+        'items' => array_slice($items, $offset, $perPage),
+        'page' => $page,
+        'pages' => $pages,
+        'total' => $total,
+        'per_page' => $perPage,
+    ];
+}
+
+function auditActionLabel(string $action): string
+{
+    return match ($action) {
+        'login' => 'تسجيل دخول',
+        'logout' => 'تسجيل خروج',
+        'user.create' => 'إنشاء مستخدم',
+        'user.update' => 'تحديث مستخدم',
+        'user.delete' => 'حذف مستخدم',
+        'user.activate' => 'تفعيل مستخدم',
+        'user.deactivate' => 'تعطيل مستخدم',
+        'user.reset_password' => 'إعادة تعيين كلمة مرور',
+        'attendance.check_in' => 'تسجيل حضور',
+        'attendance.check_out' => 'تسجيل انصراف',
+        'attendance.manual_check_in' => 'تصحيح حضور',
+        'attendance.manual_check_out' => 'تصحيح انصراف',
+        'task.create' => 'إنشاء مهمة',
+        'task.complete' => 'إتمام مهمة',
+        'task.evaluate' => 'تقييم مهمة',
+        'holiday.create' => 'إضافة عطلة',
+        'holiday.delete' => 'حذف عطلة',
+        default => $action,
+    };
 }

@@ -28,9 +28,9 @@ if (!($config['app']['setup_enabled'] ?? false)) {
     exit('صفحة الإعداد معطّلة. فعّل SETUP_ENABLED=true لإنشاء حساب المسؤول الأول.');
 }
 
+require dirname(__DIR__) . '/src/bootstrap.php';
 require dirname(__DIR__) . '/src/Database.php';
-require dirname(__DIR__) . '/src/RoleHelper.php';
-require dirname(__DIR__) . '/src/DbDiagnostics.php';
+require dirname(__DIR__) . '/src/Csrf.php';
 
 $error = null;
 $success = null;
@@ -51,6 +51,9 @@ if (!$error) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$error && $userCount === 0) {
+    if (!Csrf::verify($_POST['csrf_token'] ?? null)) {
+        $error = 'انتهت صلاحية النموذج. أعد تحميل الصفحة.';
+    } else {
     $name = trim($_POST['name'] ?? '');
     $email = trim(strtolower($_POST['email'] ?? ''));
     $password = $_POST['password'] ?? '';
@@ -63,6 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$error && $userCount === 0) {
             'INSERT INTO users (name, email, password_hash, role, timezone) VALUES (?, ?, ?, ?, ?)'
         )->execute([$name, $email, $hash, 'admin', $config['app']['default_timezone'] ?? 'Asia/Riyadh']);
         $success = true;
+    }
     }
 }
 
@@ -101,6 +105,7 @@ $loginUrl = rtrim($config['app']['url'] ?? '', '/') . '/login';
             <a href="<?= htmlspecialchars($loginUrl) ?>" class="btn" style="width:100%;text-align:center">تسجيل الدخول</a>
         <?php else: ?>
             <form method="post">
+                <?= Csrf::field() ?>
                 <div class="form-group">
                     <label>اسم مسؤول النظام</label>
                     <input type="text" name="name" class="form-control" required>

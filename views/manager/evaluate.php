@@ -21,7 +21,7 @@
         <input type="hidden" name="task_id" value="<?= (int)$task['id'] ?>">
         <div class="form-group">
             <label class="form-label">درجة الأداء (1–10)</label>
-            <input type="number" name="score" class="form-control" min="1" max="10" required value="8">
+            <input type="number" name="score" class="form-control" min="1" max="10" required placeholder="1–10">
         </div>
         <div class="form-group">
             <label class="form-label">ملاحظات التقييم</label>

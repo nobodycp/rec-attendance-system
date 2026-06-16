@@ -45,15 +45,19 @@
 
                 <div class="form-group">
                     <label for="password">كلمة المرور</label>
-                    <input
-                        type="password"
-                        id="password"
-                        name="password"
-                        class="form-control"
-                        placeholder="••••••••"
-                        autocomplete="current-password"
-                        required
-                    >
+                    <div class="password-field">
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            class="form-control"
+                            placeholder="••••••••"
+                            autocomplete="current-password"
+                            required
+                            data-password-input
+                        >
+                        <button type="button" class="password-field__toggle" data-password-toggle aria-label="إظهار كلمة المرور">👁</button>
+                    </div>
                 </div>
 
                 <button type="submit" class="btn btn-login">دخول إلى النظام</button>

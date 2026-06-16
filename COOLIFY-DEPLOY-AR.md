@@ -122,10 +122,20 @@ SETUP_ENABLED=true
 
 ---
 
-## 9. النسخ الاحتياطي
+## 9. النسخ الاحتياطي والتخزين
 
 - **قاعدة البيانات:** استخدم نسخ Coolify الاحتياطي لـ MySQL
-- **التوقيعات:** مخزّنة في قاعدة البيانات (لا حاجة لمجلد uploads)
+- **التوقيعات:** مخزّنة في قاعدة البيانات
+- **صور الملف الشخصي:** تُحفظ في `public/uploads/avatars/` داخل الحاوية
+
+### Volume لصور المستخدمين (مهم)
+
+بدون volume، صور الملف الشخصي **تضيع** بعد كل Redeploy. في Coolify:
+
+1. Application → **Storages** → **+ Add**
+2. **Destination Path:** `/var/www/html/public/uploads`
+3. **Source:** volume جديد (مثل `rec-uploads`)
+4. احفظ وأعد النشر
 
 ---
 

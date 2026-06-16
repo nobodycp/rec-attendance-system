@@ -44,5 +44,16 @@ $navActive = static function (string ...$paths) use ($route): string {
             <span class="rd-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg></span>
             <span>التقارير</span>
         </a>
+        <?php if (Auth::role() === 'admin'): ?>
+        <div class="rd-nav-section">النظام</div>
+        <a class="rd-nav-link<?= $navActive('/manager/holidays') ?>" href="<?= e(url('/manager/holidays')) ?>">
+            <span class="rd-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span>
+            <span>العطل الرسمية</span>
+        </a>
+        <a class="rd-nav-link<?= $navActive('/manager/audit') ?>" href="<?= e(url('/manager/audit')) ?>">
+            <span class="rd-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6"/><path d="M9 15h6"/></svg></span>
+            <span>سجل التدقيق</span>
+        </a>
+        <?php endif; ?>
     <?php endif; ?>
 </nav>

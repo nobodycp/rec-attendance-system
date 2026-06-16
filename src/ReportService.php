@@ -6,16 +6,7 @@ class ReportService
 {
     public static function workingDaysInMonth(int $year, int $month): int
     {
-        $days = 0;
-        $start = new DateTimeImmutable(sprintf('%04d-%02d-01', $year, $month));
-        $end = $start->modify('last day of this month');
-        for ($d = $start; $d <= $end; $d = $d->modify('+1 day')) {
-            $dow = (int) $d->format('N');
-            if ($dow >= 1 && $dow <= 5) {
-                $days++;
-            }
-        }
-        return $days;
+        return HolidayService::workingDaysInMonth($year, $month);
     }
 
     public static function monthRange(int $year, int $month): array
@@ -48,8 +39,7 @@ class ReportService
         $last = new DateTimeImmutable($end);
         while ($cursor <= $last) {
             $date = $cursor->format('Y-m-d');
-            $dow = (int) $cursor->format('N');
-            $isWorkday = $dow >= 1 && $dow <= 5;
+            $isWorkday = HolidayService::isWorkday($cursor);
             $hasIn = isset($byDate[$date]['check_in']);
             $hasOut = isset($byDate[$date]['check_out']);
             $complete = $hasIn && $hasOut;

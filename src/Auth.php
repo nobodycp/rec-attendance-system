@@ -6,15 +6,22 @@ class Auth
 {
     public static function attempt(string $email, string $password): bool
     {
-        $pdo = Database::getConnection();
-        $stmt = $pdo->prepare('SELECT * FROM users WHERE email = ? AND is_active = 1 LIMIT 1');
-        $stmt->execute([$email]);
-        $user = $stmt->fetch();
-
-        if (!$user || !password_verify($password, $user['password_hash'])) {
+        if (LoginRateLimiter::tooManyAttempts($email)) {
+            flash('error', 'محاولات كثيرة. انتظر 15 دقيقة ثم حاول مجدداً.');
             return false;
         }
 
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare('SELECT * FROM users WHERE email = ? AND is_active = 1 LIMIT 1');
+        $stmt->execute([trim(strtolower($email))]);
+        $user = $stmt->fetch();
+
+        if (!$user || !password_verify($password, $user['password_hash'])) {
+            LoginRateLimiter::recordFailure($email);
+            return false;
+        }
+
+        LoginRateLimiter::clear($email);
         session_regenerate_id(true);
         $_SESSION['user_id'] = (int) $user['id'];
         $_SESSION['user_name'] = $user['name'];
@@ -23,11 +30,16 @@ class Auth
         $_SESSION['user_timezone'] = $user['timezone'];
         $_SESSION['user_avatar'] = $user['avatar_path'] ?? null;
 
+        AuditService::log('login', (int) $user['id']);
+
         return true;
     }
 
     public static function logout(): void
     {
+        if (self::check()) {
+            AuditService::log('logout');
+        }
         $_SESSION = [];
         if (ini_get('session.use_cookies')) {
             $p = session_get_cookie_params();
@@ -91,6 +103,13 @@ class Auth
     public static function requireLogin(): void
     {
         if (!self::check()) {
+            redirect('/login');
+        }
+
+        $user = self::user();
+        if (!$user || (int) $user['is_active'] !== 1) {
+            self::logout();
+            flash('error', 'تم تعطيل حسابك. تواصل مع الإدارة.');
             redirect('/login');
         }
     }

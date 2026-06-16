@@ -78,6 +78,68 @@ class AttendanceService
             $signatureData,
             $ip,
         ]);
+
+        AuditService::log('attendance.' . $type, $userId, $localDate);
+    }
+
+    public static function manualRecord(
+        int $employeeId,
+        string $type,
+        string $date,
+        string $reason,
+        int $actorId,
+        string $timezone
+    ): void {
+        if (!in_array($type, ['check_in', 'check_out'], true)) {
+            throw new InvalidArgumentException('نوع التسجيل غير صالح.');
+        }
+
+        $reason = trim($reason);
+        if ($reason === '') {
+            throw new InvalidArgumentException('يرجى ذكر سبب التصحيح.');
+        }
+
+        AuthorizationService::requireEmployeeAccess($employeeId);
+
+        $pdo = Database::getConnection();
+        $existing = $pdo->prepare(
+            'SELECT id FROM attendance_records WHERE user_id = ? AND local_work_date = ? AND type = ?'
+        );
+        $existing->execute([$employeeId, $date, $type]);
+        if ($existing->fetch()) {
+            throw new RuntimeException('يوجد تسجيل مسبق لهذا اليوم.');
+        }
+
+        if ($type === 'check_out') {
+            $in = $pdo->prepare(
+                'SELECT id FROM attendance_records WHERE user_id = ? AND local_work_date = ? AND type = ?'
+            );
+            $in->execute([$employeeId, $date, 'check_in']);
+            if (!$in->fetch()) {
+                throw new RuntimeException('يجب تسجيل الحضور قبل الانصراف.');
+            }
+        }
+
+        $utcNow = TimezoneHelper::utcNow();
+        $signature = 'MANUAL:' . base64_encode(json_encode(['by' => $actorId, 'reason' => $reason], JSON_UNESCAPED_UNICODE));
+
+        $pdo->prepare(
+            'INSERT INTO attendance_records
+             (user_id, type, signed_at_utc, local_work_date, timezone, signature_data, ip_address, is_manual, corrected_by, correction_reason)
+             VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?)'
+        )->execute([
+            $employeeId,
+            $type,
+            $utcNow->format('Y-m-d H:i:s'),
+            $date,
+            $timezone,
+            $signature,
+            clientIp(),
+            $actorId,
+            $reason,
+        ]);
+
+        AuditService::log('attendance.manual_' . $type, $employeeId, $date . ' — ' . $reason);
     }
 
     public static function recent(int $userId, int $days = 7): array
@@ -97,18 +159,32 @@ class AttendanceService
 
     public static function teamAttendance(int $managerId, string $date): array
     {
+        return self::orgAttendance($date, $managerId);
+    }
+
+    public static function orgAttendance(string $date, ?int $managerId = null): array
+    {
         $pdo = Database::getConnection();
-        $stmt = $pdo->prepare(
-            'SELECT u.id, u.name, u.timezone,
+        $sql = 'SELECT u.id, u.name, u.timezone, m.name AS manager_name,
                     MAX(CASE WHEN a.type = "check_in" THEN a.signed_at_utc END) AS check_in_utc,
-                    MAX(CASE WHEN a.type = "check_out" THEN a.signed_at_utc END) AS check_out_utc
+                    MAX(CASE WHEN a.type = "check_out" THEN a.signed_at_utc END) AS check_out_utc,
+                    MAX(CASE WHEN a.type = "check_in" THEN a.is_manual END) AS check_in_manual,
+                    MAX(CASE WHEN a.type = "check_out" THEN a.is_manual END) AS check_out_manual
              FROM users u
+             LEFT JOIN users m ON m.id = u.manager_id
              LEFT JOIN attendance_records a ON a.user_id = u.id AND a.local_work_date = ?
-             WHERE u.manager_id = ? AND u.role = "employee" AND u.is_active = 1
-             GROUP BY u.id, u.name, u.timezone
-             ORDER BY u.name'
-        );
-        $stmt->execute([$date, $managerId]);
+             WHERE u.role = "employee" AND u.is_active = 1';
+        $params = [$date];
+
+        if ($managerId !== null) {
+            $sql .= ' AND u.manager_id = ?';
+            $params[] = $managerId;
+        }
+
+        $sql .= ' GROUP BY u.id, u.name, u.timezone, m.name ORDER BY u.name';
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+
         return $stmt->fetchAll();
     }
 }

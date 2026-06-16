@@ -6,6 +6,9 @@
 
 <div class="card">
     <h2>إضافة مهمة جديدة</h2>
+    <?php if (empty($employees)): ?>
+        <p class="table-empty" style="padding: 1.25rem">لا يوجد موظفون — <a href="<?= e(url('/manager/users')) ?>">أضف موظفاً أولاً</a>.</p>
+    <?php else: ?>
     <form method="post" action="<?= e(url('/manager/tasks/create')) ?>">
         <?= Csrf::field() ?>
         <div class="grid-2">
@@ -32,7 +35,20 @@
         </div>
         <button type="submit" class="btn">إضافة المهمة</button>
     </form>
+    <?php endif; ?>
 </div>
+
+<form method="get" class="filter-bar no-print">
+    <div class="form-group">
+        <label class="form-label">من تاريخ</label>
+        <input type="date" name="from" class="form-control" value="<?= e($from) ?>">
+    </div>
+    <div class="form-group">
+        <label class="form-label">إلى تاريخ</label>
+        <input type="date" name="to" class="form-control" value="<?= e($to) ?>">
+    </div>
+    <button type="submit" class="btn btn-outline">تصفية</button>
+</form>
 
 <div class="card">
     <h2>قائمة المهام</h2>
@@ -43,7 +59,7 @@
             </thead>
             <tbody>
             <?php if (empty($tasks)): ?>
-                <tr><td colspan="6" class="table-empty">لا توجد مهام</td></tr>
+                <tr><td colspan="6" class="table-empty">لا توجد مهام في هذا النطاق</td></tr>
             <?php else: foreach ($tasks as $t): ?>
             <tr>
                 <td><?= e($t['task_date']) ?></td>
@@ -63,14 +79,13 @@
             </tbody>
         </table>
     </div>
+    <?php require __DIR__ . '/../partials/pagination.php'; ?>
 </div>
 
 <div id="completeModal" class="modal" role="dialog" aria-modal="true">
     <div class="modal__dialog">
-        <div class="modal__header">
-            <h3>تسجيل إتمام المهمة</h3>
-        </div>
-        <form method="post" action="<?= e(url('/employee/task/complete')) ?>">
+        <div class="modal__header"><h3>تسجيل إتمام المهمة</h3></div>
+        <form method="post" action="<?= e(url('/employee/task/complete')) ?>" data-confirm="تأكيد إتمام المهمة؟">
             <?= Csrf::field() ?>
             <input type="hidden" name="task_id" id="modalTaskId">
             <div class="modal__body">

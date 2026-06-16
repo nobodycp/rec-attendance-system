@@ -949,6 +949,79 @@ textarea.form-control {
     color: var(--bs-secondary-color);
 }
 
+.breadcrumbs {
+    margin-bottom: 1rem;
+}
+
+.breadcrumbs__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+.breadcrumbs__list li:not(:last-child)::after {
+    content: '›';
+    margin-inline-start: 0.35rem;
+    opacity: 0.6;
+}
+
+.breadcrumbs__list a {
+    color: var(--rd-accent);
+    text-decoration: none;
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.85rem 1.25rem 1.25rem;
+    flex-wrap: wrap;
+}
+
+.pagination__info {
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+.pagination__links {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.password-field {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+}
+
+.password-field .form-control {
+    padding-inline-end: 2.75rem;
+}
+
+.password-field__toggle {
+    position: absolute;
+    inset-inline-end: 0.35rem;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    padding: 0.25rem;
+    opacity: 0.7;
+}
+
+.password-field__toggle:hover {
+    opacity: 1;
+}
+
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
         animation-duration: 0.01ms !important;

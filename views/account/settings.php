@@ -80,11 +80,11 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="new-password">كلمة المرور الجديدة</label>
-                    <input type="password" id="new-password" name="new_password" class="form-control" minlength="8" required autocomplete="new-password">
+                    <input type="password" id="new-password" name="new_password" class="form-control" minlength="<?= passwordMinLength() ?>" required autocomplete="new-password">
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="confirm-password">تأكيد كلمة المرور الجديدة</label>
-                    <input type="password" id="confirm-password" name="confirm_password" class="form-control" minlength="8" required autocomplete="new-password">
+                    <input type="password" id="confirm-password" name="confirm_password" class="form-control" minlength="<?= passwordMinLength() ?>" required autocomplete="new-password">
                 </div>
                 <button type="submit" class="btn">تحديث كلمة المرور</button>
             </form>

@@ -4,14 +4,26 @@ declare(strict_types=1);
 
 class TaskService
 {
-    public static function create(int $employeeId, int $assignedBy, string $title, ?string $description, string $taskDate): int
+    public static function create(int $employeeId, int $assignedBy, string $title, ?string $description, string $taskDate, string $actorRole): int
     {
+        if (!AuthorizationService::canAccessEmployee($assignedBy, $actorRole, $employeeId)) {
+            throw new RuntimeException('لا يمكنك إسناد مهمة لهذا الموظف.');
+        }
+
+        $title = trim($title);
+        if ($title === '') {
+            throw new InvalidArgumentException('عنوان المهمة مطلوب.');
+        }
+
         $pdo = Database::getConnection();
         $stmt = $pdo->prepare(
             'INSERT INTO daily_tasks (employee_id, assigned_by, title, description, task_date) VALUES (?, ?, ?, ?, ?)'
         );
         $stmt->execute([$employeeId, $assignedBy, $title, $description, $taskDate]);
-        return (int) $pdo->lastInsertId();
+        $id = (int) $pdo->lastInsertId();
+        AuditService::log('task.create', $employeeId, $title);
+
+        return $id;
     }
 
     public static function getById(int $taskId): ?array
@@ -76,6 +88,31 @@ class TaskService
         return $stmt->fetchAll();
     }
 
+    public static function forAdmin(?string $from = null, ?string $to = null): array
+    {
+        $pdo = Database::getConnection();
+        $sql = 'SELECT t.*, e.name AS employee_name, tc.completed_at_utc, te.score
+                FROM daily_tasks t
+                JOIN users e ON e.id = t.employee_id
+                LEFT JOIN task_completions tc ON tc.task_id = t.id
+                LEFT JOIN task_evaluations te ON te.task_id = t.id
+                WHERE 1=1';
+        $params = [];
+        if ($from) {
+            $sql .= ' AND t.task_date >= ?';
+            $params[] = $from;
+        }
+        if ($to) {
+            $sql .= ' AND t.task_date <= ?';
+            $params[] = $to;
+        }
+        $sql .= ' ORDER BY t.task_date DESC, t.id DESC';
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+
+        return $stmt->fetchAll();
+    }
+
     public static function complete(int $taskId, int $completedBy, string $localDatetime, string $timezone, ?string $notes): void
     {
         $task = self::getById($taskId);
@@ -103,6 +140,7 @@ class TaskService
         ]);
         $pdo->prepare('UPDATE daily_tasks SET status = ? WHERE id = ?')->execute(['completed', $taskId]);
         $pdo->commit();
+        AuditService::log('task.complete', (int) $task['employee_id'], $task['title']);
     }
 
     public static function evaluate(int $taskId, int $evaluatedBy, int $score, ?string $notes): void
@@ -128,16 +166,12 @@ class TaskService
         )->execute([$taskId, $evaluatedBy, $score, $notes, $utcNow->format('Y-m-d H:i:s')]);
         $pdo->prepare('UPDATE daily_tasks SET status = ? WHERE id = ?')->execute(['evaluated', $taskId]);
         $pdo->commit();
+        AuditService::log('task.evaluate', (int) $task['employee_id'], (string) $score);
     }
 
     public static function teamEmployees(int $managerId): array
     {
-        $pdo = Database::getConnection();
-        $stmt = $pdo->prepare(
-            'SELECT id, name, email, timezone FROM users WHERE manager_id = ? AND role = "employee" AND is_active = 1 ORDER BY name'
-        );
-        $stmt->execute([$managerId]);
-        return $stmt->fetchAll();
+        return UserService::activeEmployees($managerId);
     }
 
     public static function canAccess(int $taskId, int $userId, string $role): bool
@@ -152,12 +186,8 @@ class TaskService
         if ($role === 'employee' && (int) $task['employee_id'] === $userId) {
             return true;
         }
-        if (in_array($role, ['manager', 'dept_manager', 'admin'], true)) {
-            $pdo = Database::getConnection();
-            $stmt = $pdo->prepare('SELECT manager_id FROM users WHERE id = ?');
-            $stmt->execute([$task['employee_id']]);
-            $emp = $stmt->fetch();
-            return $emp && (int) $emp['manager_id'] === $userId;
+        if (in_array($role, ['manager', 'dept_manager'], true)) {
+            return AuthorizationService::canAccessEmployee($userId, $role, (int) $task['employee_id']);
         }
         return false;
     }

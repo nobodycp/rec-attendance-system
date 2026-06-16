@@ -9,8 +9,8 @@ class AccountService
 
     public static function changePassword(int $userId, string $current, string $new, string $confirm): void
     {
-        if (strlen($new) < 8) {
-            throw new InvalidArgumentException('كلمة المرور الجديدة يجب أن تكون 8 أحرف على الأقل.');
+        if (strlen($new) < UserService::MIN_PASSWORD_LENGTH) {
+            throw new InvalidArgumentException('كلمة المرور الجديدة يجب أن تكون ' . UserService::MIN_PASSWORD_LENGTH . ' أحرف على الأقل.');
         }
         if ($new !== $confirm) {
             throw new InvalidArgumentException('تأكيد كلمة المرور غير متطابق.');

@@ -1,7 +1,6 @@
 (function () {
     'use strict';
 
-    /* Modal helpers */
     window.openModal = function (id) {
         var el = document.getElementById(id);
         if (!el) return;
@@ -35,6 +34,9 @@
         document.querySelectorAll('.modal.is-open').forEach(function (m) {
             closeModal(m.id);
         });
+        document.querySelectorAll('details.rd-user-menu[open]').forEach(function (m) {
+            m.removeAttribute('open');
+        });
     });
 
     document.addEventListener('click', function (e) {
@@ -46,14 +48,28 @@
         });
     });
 
-    document.addEventListener('keydown', function (e) {
-        if (e.key !== 'Escape') return;
-        document.querySelectorAll('details.rd-user-menu[open]').forEach(function (m) {
-            m.removeAttribute('open');
+    document.querySelectorAll('[data-password-toggle]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var wrap = btn.closest('.password-field');
+            if (!wrap) return;
+            var input = wrap.querySelector('[data-password-input]');
+            if (!input) return;
+            var show = input.type === 'password';
+            input.type = show ? 'text' : 'password';
+            btn.textContent = show ? '🙈' : '👁';
+            btn.setAttribute('aria-label', show ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور');
         });
     });
 
-    /* Auto-dismiss alerts after 5s */
+    document.querySelectorAll('form[data-confirm]').forEach(function (form) {
+        form.addEventListener('submit', function (e) {
+            var msg = form.getAttribute('data-confirm');
+            if (msg && !window.confirm(msg)) {
+                e.preventDefault();
+            }
+        });
+    });
+
     document.querySelectorAll('.alert').forEach(function (alert) {
         setTimeout(function () {
             alert.style.transition = 'opacity 0.3s ease';

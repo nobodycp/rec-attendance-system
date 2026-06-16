@@ -54,6 +54,8 @@
                 <div class="alert alert-error"><?= e($error) ?></div>
             <?php endif; ?>
 
+            <?php require __DIR__ . '/partials/breadcrumbs.php'; ?>
+
             <?php require __DIR__ . '/' . ($name ?? 'login') . '.php'; ?>
         </main>
     </div>

@@ -1,7 +1,7 @@
 <?php $title = 'إدارة الموظفين'; ?>
 <div class="page-header">
     <h1>إدارة الموظفين والمستخدمين</h1>
-    <p class="page-header__subtitle">أضف مستخدمين جدد واختر الدور المناسب: موظف، مشرف، مدير قسم، أو مسؤول نظام.</p>
+    <p class="page-header__subtitle">أضف مستخدمين جدد، عدّل بياناتهم، وأعد تعيين كلمات المرور.</p>
 </div>
 
 <div class="card">
@@ -15,19 +15,20 @@
             </div>
             <div class="form-group">
                 <label class="form-label">البريد الإلكتروني</label>
-                <input type="email" name="email" class="form-control" required>
+                <input type="email" name="email" class="form-control" required dir="ltr">
             </div>
             <div class="form-group">
                 <label class="form-label">كلمة المرور</label>
-                <input type="password" name="password" class="form-control" minlength="6" required>
+                <div class="password-field">
+                    <input type="password" name="password" class="form-control" minlength="<?= passwordMinLength() ?>" required data-password-input>
+                    <button type="button" class="password-field__toggle" data-password-toggle aria-label="إظهار كلمة المرور">👁</button>
+                </div>
             </div>
             <div class="form-group">
                 <label class="form-label">الدور</label>
                 <select name="role" class="form-control" id="userRole" onchange="toggleManagerField()">
                     <?php foreach ($availableRoles as $roleKey => $roleName): ?>
-                    <option value="<?= e($roleKey) ?>" <?= $roleKey === 'employee' ? 'selected' : '' ?>>
-                        <?= e($roleName) ?>
-                    </option>
+                    <option value="<?= e($roleKey) ?>" <?= $roleKey === 'employee' ? 'selected' : '' ?>><?= e($roleName) ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
@@ -40,7 +41,7 @@
                 </select>
             </div>
             <div class="form-group" id="managerField">
-                <label class="form-label">المشرف / مدير القسم المسؤول</label>
+                <label class="form-label">المشرف / مدير القسم</label>
                 <select name="manager_id" class="form-control">
                     <?php foreach ($supervisors as $m): ?>
                     <option value="<?= (int)$m['id'] ?>" <?= (int)$m['id'] === Auth::id() ? 'selected' : '' ?>>
@@ -64,21 +65,19 @@
                     <th>البريد</th>
                     <th>الدور</th>
                     <th>المشرف</th>
-                    <th>المنطقة الزمنية</th>
                     <th>الحالة</th>
                     <th>إجراء</th>
                 </tr>
             </thead>
             <tbody>
             <?php if (empty($users)): ?>
-                <tr><td colspan="7" class="table-empty">لا يوجد مستخدمون</td></tr>
+                <tr><td colspan="6" class="table-empty">لا يوجد مستخدمون — أضف أول موظف من النموذج أعلاه.</td></tr>
             <?php else: foreach ($users as $u): ?>
                 <tr>
                     <td><strong><?= e($u['name']) ?></strong></td>
-                    <td><?= e($u['email']) ?></td>
+                    <td dir="ltr"><?= e($u['email']) ?></td>
                     <td><?= e(RoleHelper::label($u['role'])) ?></td>
                     <td><?= e($u['manager_name'] ?? '—') ?></td>
-                    <td><?= e(TimezoneHelper::commonTimezones()[$u['timezone']] ?? $u['timezone']) ?></td>
                     <td>
                         <?php if ((int)$u['is_active'] === 1): ?>
                             <span class="badge badge-active">نشط</span>
@@ -89,16 +88,14 @@
                     <td>
                         <?php if ((int)$u['id'] !== Auth::id()): ?>
                         <div class="actions-cell">
-                            <form method="post" action="<?= e(url('/manager/users/toggle')) ?>">
+                            <a href="<?= e(url('/manager/users/edit?id=' . (int)$u['id'])) ?>" class="btn btn-outline btn-sm">تعديل</a>
+                            <form method="post" action="<?= e(url('/manager/users/toggle')) ?>" data-confirm="تأكيد تغيير حالة المستخدم؟">
                                 <?= Csrf::field() ?>
                                 <input type="hidden" name="user_id" value="<?= (int)$u['id'] ?>">
-                                <button type="submit" class="btn btn-outline btn-sm">
-                                    <?= (int)$u['is_active'] === 1 ? 'تعطيل' : 'تفعيل' ?>
-                                </button>
+                                <button type="submit" class="btn btn-outline btn-sm"><?= (int)$u['is_active'] === 1 ? 'تعطيل' : 'تفعيل' ?></button>
                             </form>
                             <?php if ($isAdmin): ?>
-                            <form method="post" action="<?= e(url('/manager/users/delete')) ?>"
-                                  onsubmit="return confirm('هل أنت متأكد من حذف <?= e(addslashes($u['name'])) ?>؟\n\nسيتم حذف سجلات الحضور والمهام المرتبطة به نهائياً.');">
+                            <form method="post" action="<?= e(url('/manager/users/delete')) ?>" data-confirm="هل أنت متأكد من حذف <?= e(addslashes($u['name'])) ?>؟ سيتم حذف جميع سجلاته.">
                                 <?= Csrf::field() ?>
                                 <input type="hidden" name="user_id" value="<?= (int)$u['id'] ?>">
                                 <button type="submit" class="btn btn-danger btn-sm">حذف</button>
@@ -112,6 +109,7 @@
             </tbody>
         </table>
     </div>
+    <?php require __DIR__ . '/../partials/pagination.php'; ?>
 </div>
 
 <script>

@@ -25,8 +25,12 @@ CREATE TABLE IF NOT EXISTS attendance_records (
     timezone VARCHAR(64) NOT NULL,
     signature_data MEDIUMTEXT NOT NULL,
     ip_address VARCHAR(45) NULL,
+    is_manual TINYINT(1) NOT NULL DEFAULT 0,
+    corrected_by INT UNSIGNED NULL,
+    correction_reason VARCHAR(255) NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_attendance_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_attendance_corrected_by FOREIGN KEY (corrected_by) REFERENCES users(id) ON DELETE SET NULL,
     UNIQUE KEY uq_attendance_user_date_type (user_id, local_work_date, type),
     KEY idx_attendance_user_date (user_id, local_work_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -68,6 +72,34 @@ CREATE TABLE IF NOT EXISTS task_evaluations (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_evaluation_task FOREIGN KEY (task_id) REFERENCES daily_tasks(id) ON DELETE CASCADE,
     CONSTRAINT fk_evaluation_manager FOREIGN KEY (evaluated_by) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS holidays (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    holiday_date DATE NOT NULL UNIQUE,
+    name VARCHAR(150) NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    actor_id INT UNSIGNED NOT NULL,
+    action VARCHAR(80) NOT NULL,
+    target_user_id INT UNSIGNED NULL,
+    details TEXT NULL,
+    ip_address VARCHAR(45) NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_audit_actor FOREIGN KEY (actor_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_audit_target FOREIGN KEY (target_user_id) REFERENCES users(id) ON DELETE SET NULL,
+    KEY idx_audit_created (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS login_attempts (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(190) NOT NULL,
+    ip_address VARCHAR(45) NULL,
+    attempted_at DATETIME NOT NULL,
+    KEY idx_login_attempts_email_time (email, attempted_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 SET FOREIGN_KEY_CHECKS = 1;
