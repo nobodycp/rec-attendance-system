@@ -61,6 +61,7 @@ function view(string $name, array $data = []): void
     if (!isset($data['page'])) {
         $data['page'] = basename(str_replace('\\', '/', $name));
     }
+    $data['currentRoute'] = currentRoute();
     extract($data);
     require dirname(__DIR__) . '/views/layout.php';
 }
@@ -89,4 +90,24 @@ function roleLabel(string $role): string
 function clientIp(): string
 {
     return $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+}
+
+function currentRoute(): string
+{
+    $route = $_GET['route'] ?? '/';
+    $route = '/' . trim((string) $route, '/');
+    return $route === '//' ? '/' : $route;
+}
+
+function userInitials(string $name): string
+{
+    $parts = preg_split('/\s+/u', trim($name), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+    if ($parts === []) {
+        return '?';
+    }
+    if (count($parts) === 1) {
+        return mb_strtoupper(mb_substr($parts[0], 0, 2));
+    }
+
+    return mb_strtoupper(mb_substr($parts[0], 0, 1) . mb_substr($parts[1], 0, 1));
 }
