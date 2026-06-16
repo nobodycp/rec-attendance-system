@@ -32,8 +32,8 @@
 1. **Resources** → **+ New** → **Application**
 2. اختر مصدر الكود (Git repository)
 3. **Build Pack:** Dockerfile
-4. **Port:** `80`
-5. **Health Check Path:** `/health`
+4. **Ports Exposes:** `3000` (Coolify يعيّن `PORT=3000` افتراضياً)
+5. **Health Check Path:** `/ping.php`
 
 ---
 
