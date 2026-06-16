@@ -136,7 +136,8 @@ SETUP_ENABLED=true
 | 500 — خطأ قاعدة البيانات | تحقق من `DATABASE_URL` أو `DB_HOST` وبيانات MySQL |
 | setup.php معطّل | عيّن `SETUP_ENABLED=true` مؤقتاً |
 | redirect خاطئ | تأكد أن `APP_URL` صحيح مع https |
-| health check فاشل | تحقق من اتصال MySQL — `/health` يختبر قاعدة البيانات |
+| health check فاشل | `/health` يعمل حتى بدون DB — تحقق من logs الحاوية |
+| 502 Bad Gateway | الحاوية لا تعمل — راجع Logs؛ فعّل `APP_DEBUG=true` وافتح `/debug/db` |
 
 ---
 

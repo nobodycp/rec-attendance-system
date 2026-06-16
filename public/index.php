@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 $config = require dirname(__DIR__) . '/config/config.php';
 
+if ($config['app']['debug'] ?? false) {
+    ini_set('display_errors', '1');
+    ini_set('display_startup_errors', '1');
+    error_reporting(E_ALL);
+}
+
 if (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https') {
     $_SERVER['HTTPS'] = 'on';
 }
@@ -33,6 +39,7 @@ require dirname(__DIR__) . '/src/AttendanceService.php';
 require dirname(__DIR__) . '/src/TaskService.php';
 require dirname(__DIR__) . '/src/ReportService.php';
 require dirname(__DIR__) . '/src/UserService.php';
+require dirname(__DIR__) . '/src/DbDiagnostics.php';
 
 $route = $_GET['route'] ?? '/';
 $route = '/' . trim($route, '/');
@@ -78,9 +85,31 @@ try {
         })(),
 
         $route === '/health' && $method === 'GET' => (function () {
-            Database::getConnection()->query('SELECT 1');
             header('Content-Type: application/json');
-            echo json_encode(['status' => 'ok']);
+            $payload = ['status' => 'ok', 'db' => 'unknown'];
+
+            try {
+                Database::getConnection()->query('SELECT 1');
+                $payload['db'] = 'connected';
+            } catch (Throwable $e) {
+                $payload['db'] = 'failed';
+                if (config('app.debug')) {
+                    $payload['db_error'] = $e->getMessage();
+                }
+            }
+
+            echo json_encode($payload);
+        })(),
+
+        $route === '/debug/db' && $method === 'GET' => (function () {
+            if (!config('app.debug')) {
+                http_response_code(404);
+                echo 'Not found';
+                return;
+            }
+
+            header('Content-Type: application/json');
+            echo json_encode(testDatabaseConnection(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
         })(),
 
         $route === '/employee/dashboard' && $method === 'GET' => (function () {
@@ -327,6 +356,9 @@ try {
     };
 } catch (Throwable $e) {
     if (config('app.debug')) {
+        http_response_code(500);
+        echo '<h1>خطأ</h1><pre>' . e($e->getMessage()) . '</pre>';
+        echo '<pre>' . e($e->getTraceAsString()) . '</pre>';
         throw $e;
     }
     http_response_code(500);

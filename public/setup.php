@@ -17,6 +17,12 @@ if (!is_file($configPath)) {
 
 $config = require $configPath;
 
+if ($config['app']['debug'] ?? false) {
+    ini_set('display_errors', '1');
+    ini_set('display_startup_errors', '1');
+    error_reporting(E_ALL);
+}
+
 if (!($config['app']['setup_enabled'] ?? false)) {
     http_response_code(403);
     exit('صفحة الإعداد معطّلة. فعّل SETUP_ENABLED=true لإنشاء حساب المسؤول الأول.');
@@ -24,6 +30,7 @@ if (!($config['app']['setup_enabled'] ?? false)) {
 
 require dirname(__DIR__) . '/src/Database.php';
 require dirname(__DIR__) . '/src/RoleHelper.php';
+require dirname(__DIR__) . '/src/DbDiagnostics.php';
 
 $error = null;
 $success = null;
@@ -32,7 +39,10 @@ try {
     $pdo = Database::getConnection();
     $pdo->query('SELECT 1 FROM users LIMIT 1');
 } catch (Throwable $e) {
-    $error = 'تعذّر الاتصال بقاعدة البيانات. تأكد من متغيرات البيئة واستيراد schema.sql.';
+    $error = 'تعذّر الاتصال بقاعدة البيانات. تأكد من DATABASE_URL أو متغيرات DB_*.';
+    if ($config['app']['debug'] ?? false) {
+        $error .= ' — ' . $e->getMessage();
+    }
 }
 
 $userCount = 0;
@@ -74,6 +84,9 @@ $loginUrl = rtrim($config['app']['url'] ?? '', '/') . '/login';
 
         <?php if ($error): ?>
             <div class="alert alert-error"><?= htmlspecialchars($error) ?></div>
+            <?php if ($config['app']['debug'] ?? false): ?>
+                <pre style="font-size:0.8rem;overflow:auto"><?= htmlspecialchars(json_encode(testDatabaseConnection(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)) ?></pre>
+            <?php endif; ?>
         <?php endif; ?>
 
         <?php if ($success): ?>
