@@ -6,10 +6,10 @@ require_once dirname(__DIR__) . '/src/RoleHelper.php';
 
 function config(string $key, mixed $default = null): mixed
 {
-    static $cfg = null;
-    if ($cfg === null) {
-        $cfg = require dirname(__DIR__) . '/config/config.php';
+    if (!function_exists('app_config')) {
+        require_once dirname(__DIR__) . '/config/config.php';
     }
+    $cfg = app_config();
     $parts = explode('.', $key);
     $value = $cfg;
     foreach ($parts as $part) {

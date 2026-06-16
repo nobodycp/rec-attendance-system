@@ -34,7 +34,10 @@ function dbConfigForDebug(array $db): array
 
 function testDatabaseConnection(): array
 {
-    $config = require dirname(__DIR__) . '/config/config.php';
+    if (!function_exists('app_config')) {
+        require_once dirname(__DIR__) . '/config/config.php';
+    }
+    $config = app_config();
     $db = $config['db'];
 
     $result = [

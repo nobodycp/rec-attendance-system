@@ -15,14 +15,15 @@ WORKDIR /var/www/html
 COPY . /var/www/html
 
 RUN chown -R www-data:www-data /var/www/html \
+    && sed -i 's/\r$//' /var/www/html/docker/entrypoint.sh \
     && chmod +x /var/www/html/docker/entrypoint.sh
 
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 
 EXPOSE 80
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
-    CMD curl -sf http://localhost/health | grep -q '"status":"ok"' || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+    CMD curl -f http://localhost/ping.php || exit 1
 
 ENTRYPOINT ["/var/www/html/docker/entrypoint.sh"]
 CMD ["apache2-foreground"]
