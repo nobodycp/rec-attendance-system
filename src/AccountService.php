@@ -28,6 +28,26 @@ class AccountService
         $pdo->prepare('UPDATE users SET password_hash = ? WHERE id = ?')->execute([$hash, $userId]);
     }
 
+    public static function updateEmail(int $userId, string $email): void
+    {
+        $email = trim(strtolower($email));
+        if ($email === '') {
+            throw new InvalidArgumentException('يرجى إدخال البريد الإلكتروني.');
+        }
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            throw new InvalidArgumentException('البريد الإلكتروني غير صالح.');
+        }
+
+        $pdo = Database::getConnection();
+        $exists = $pdo->prepare('SELECT id FROM users WHERE email = ? AND id != ? LIMIT 1');
+        $exists->execute([$email, $userId]);
+        if ($exists->fetch()) {
+            throw new RuntimeException('البريد الإلكتروني مستخدم مسبقاً.');
+        }
+
+        $pdo->prepare('UPDATE users SET email = ? WHERE id = ?')->execute([$email, $userId]);
+    }
+
     public static function uploadAvatar(int $userId, array $file): string
     {
         if (($file['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {

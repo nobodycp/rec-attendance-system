@@ -867,11 +867,32 @@ textarea.form-control {
 }
 
 /* Account settings */
-.settings-stack {
-    display: flex;
-    flex-direction: column;
+.settings-page {
+    width: 100%;
+    max-width: 56rem;
+    margin-inline: auto;
+}
+
+.settings-layout {
+    display: grid;
     gap: 1.25rem;
-    max-width: 36rem;
+    align-items: start;
+}
+
+@media (min-width: 900px) {
+    .settings-layout {
+        grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    }
+}
+
+.settings-card h2 {
+    margin: 0 0 1rem;
+    font-size: 1.05rem;
+}
+
+.settings-card__intro {
+    margin: -0.35rem 0 1rem;
+    font-size: 0.88rem;
 }
 
 .settings-profile {
@@ -879,8 +900,9 @@ textarea.form-control {
     align-items: center;
     gap: 1rem;
     margin-bottom: 1.25rem;
-    padding-bottom: 1.25rem;
-    border-bottom: 1px solid var(--bs-border-color);
+    padding: 1rem;
+    border-radius: var(--rd-radius-md, 0.75rem);
+    background: var(--bs-secondary-bg, rgba(0, 0, 0, 0.03));
 }
 
 .settings-profile__name {
@@ -893,10 +915,32 @@ textarea.form-control {
     margin-top: 0.15rem;
 }
 
+.settings-section + .settings-section {
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--bs-border-color);
+}
+
+.settings-section__title {
+    margin: 0 0 0.85rem;
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--text);
+}
+
 .settings-form {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+}
+
+.settings-form .btn {
+    align-self: flex-start;
+    margin-top: 0.15rem;
+}
+
+.settings-form input[type="email"] {
+    text-align: start;
 }
 
 .form-hint {

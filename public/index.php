@@ -114,6 +114,22 @@ try {
             redirect('/account/settings');
         })(),
 
+        $route === '/account/email' && $method === 'POST' => (function () {
+            Auth::requireLogin();
+            if (!Csrf::verify($_POST['csrf_token'] ?? null)) {
+                flash('error', 'انتهت صلاحية النموذج.');
+                redirect('/account/settings');
+            }
+            try {
+                AccountService::updateEmail(Auth::id(), $_POST['email'] ?? '');
+                Auth::refreshSession();
+                flash('success', 'تم تحديث البريد الإلكتروني.');
+            } catch (Throwable $e) {
+                flash('error', $e->getMessage());
+            }
+            redirect('/account/settings');
+        })(),
+
         $route === '/account/avatar' && $method === 'POST' => (function () {
             Auth::requireLogin();
             if (!Csrf::verify($_POST['csrf_token'] ?? null)) {
