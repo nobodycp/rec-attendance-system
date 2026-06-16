@@ -1,6 +1,4 @@
 # بيانات محلية
-database/attendance.sqlite
-php.local.ini
 .env
 
 # نظام

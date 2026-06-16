@@ -138,27 +138,3 @@ SETUP_ENABLED=true
 | redirect خاطئ | تأكد أن `APP_URL` صحيح مع https |
 | health check فاشل | `/health` يعمل حتى بدون DB — تحقق من logs الحاوية |
 | 502 Bad Gateway | الحاوية لا تعمل — راجع Logs؛ فعّل `APP_DEBUG=true` وافتح `/debug/db` |
-
----
-
-## docker-compose (اختبار محلي)
-
-لاختبار نفس بيئة الإنتاج محلياً:
-
-```powershell
-copy .env.example .env
-docker compose up -d --build
-```
-
-ثم اتبع خطوات الإعداد من `/setup.php`.
-
----
-
-## Coolify vs docker-compose على الخادم
-
-| | Coolify | docker-compose يدوي |
-|---|---------|---------------------|
-| MySQL | خدمة منفصلة في Coolify | حاوية `db` في compose |
-| SSL | تلقائي | يدوي |
-| Env vars | لوحة Coolify | ملف `.env` |
-| موصى به | **نعم — للإنتاج** | للاختبار المحلي |

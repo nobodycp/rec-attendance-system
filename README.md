@@ -2,57 +2,37 @@
 
 نظام إنتاجي لإدارة حضور الموظفين والمهام اليومية والتقييم الشهري.
 
+يعمل كحاوية Docker ويُنشر على [Coolify](https://coolify.io) مع MySQL.
+
 ## المتطلبات
 
-- Docker + Docker Compose (للإنتاج والتطوير)
-- أو PHP 8.1+ مع SQLite (للتطوير المحلي فقط)
-
-## التشغيل السريع (Docker)
-
-```powershell
-cd rec-attendance-system
-copy .env.example .env
-# عدّل .env — خاصة DB_PASS و APP_URL
-
-docker compose up -d --build
-```
-
-افتح: http://localhost:8080/setup.php
-
-1. أنشئ حساب مسؤول النظام
-2. عطّل `SETUP_ENABLED=false` في `.env` وأعد تشغيل الحاوية
-3. سجّل الدخول من `/login`
-
-## متغيرات البيئة
-
-| المتغير | الوصف |
-|---------|--------|
-| `DATABASE_URL` | رابط MySQL كامل (Coolify) — `mysql://user:pass@host:3306/db` |
-| `DB_HOST` | عنوان MySQL (بديل عند عدم وجود DATABASE_URL) |
-| `DB_NAME` | اسم قاعدة البيانات |
-| `DB_USER` / `DB_PASS` | بيانات الاتصال |
-| `APP_URL` | رابط الموقع (https://...) |
-| `APP_DEBUG` | `false` في الإنتاج |
-| `SETUP_ENABLED` | `true` مؤقتاً لإنشاء المسؤول الأول |
-
-راجع `.env.example` للقائمة الكاملة.
+- Coolify على VPS
+- مستودع Git
+- قاعدة بيانات MySQL 8 (خدمة منفصلة في Coolify)
 
 ## النشر على Coolify
 
 راجع **COOLIFY-DEPLOY-AR.md** — دليل خطوة بخطوة.
 
-## التطوير المحلي (بدون Docker)
+### ملخص سريع
 
-```powershell
-copy .env.example .env
-# في .env: DB_DRIVER=sqlite و SETUP_ENABLED=true
+1. أنشئ MySQL في Coolify واحفظ `DATABASE_URL`
+2. أنشئ Application من Dockerfile
+3. عيّن متغيرات البيئة (`APP_URL`, `SETUP_ENABLED=true`, ...)
+4. Deploy ثم افتح `/setup.php` لإنشاء مسؤول النظام
+5. عطّل `SETUP_ENABLED=false` وأعد النشر
 
-php database\install.php
-$env:PHPRC = "php.local.ini"
-php -S localhost:8080 -t public public/router.php
-```
+## متغيرات البيئة
 
-ثم افتح `/setup.php` لإنشاء حساب المسؤول.
+| المتغير | الوصف |
+|---------|--------|
+| `DATABASE_URL` | رابط MySQL من Coolify — `mysql://user:pass@host:3306/db` |
+| `DB_HOST` / `DB_NAME` / `DB_USER` / `DB_PASS` | بديل عند عدم وجود `DATABASE_URL` |
+| `APP_URL` | رابط الموقع (`https://...`) |
+| `APP_DEBUG` | `false` في الإنتاج |
+| `SETUP_ENABLED` | `true` مؤقتاً لإنشاء المسؤول الأول |
+
+راجع `.env.example` للقائمة الكاملة.
 
 ## الهيكل
 
@@ -64,8 +44,3 @@ views/      ← القوالب
 database/   ← schema.sql + أدوات التثبيت
 docker/     ← إعدادات الحاوية
 ```
-
-## الوثائق
-
-- `COOLIFY-DEPLOY-AR.md` — النشر على Coolify (موصى به)
-- `README-DEPLOY.md` — النشر على استضافة PHP تقليدية (Hostinger)

@@ -1,4 +1,4 @@
--- نظام دوام الموظفين - MySQL (للإنتاج على Hostinger)
+-- نظام دوام الموظفين - MySQL (Coolify / Docker)
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 

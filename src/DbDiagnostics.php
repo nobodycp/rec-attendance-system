@@ -47,23 +47,17 @@ function testDatabaseConnection(): array
     ];
 
     try {
-        if (($db['driver'] ?? 'mysql') === 'sqlite') {
-            $pdo = new PDO('sqlite:' . $db['sqlite_path'], null, null, [
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            ]);
-        } else {
-            $port = (int) ($db['port'] ?? 3306);
-            $dsn = sprintf(
-                'mysql:host=%s;port=%d;dbname=%s;charset=%s',
-                $db['host'],
-                $port,
-                $db['name'],
-                $db['charset'] ?? 'utf8mb4'
-            );
-            $pdo = new PDO($dsn, $db['user'], $db['pass'], [
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            ]);
-        }
+        $port = (int) ($db['port'] ?? 3306);
+        $dsn = sprintf(
+            'mysql:host=%s;port=%d;dbname=%s;charset=%s',
+            $db['host'],
+            $port,
+            $db['name'],
+            $db['charset'] ?? 'utf8mb4'
+        );
+        $pdo = new PDO($dsn, $db['user'], $db['pass'], [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        ]);
 
         $pdo->query('SELECT 1');
         $result['ok'] = true;

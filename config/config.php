@@ -93,7 +93,6 @@ if (!function_exists('resolveDatabaseConfig')) {
 
         $db = [
             'driver' => $driver,
-            'sqlite_path' => env('DB_SQLITE_PATH', dirname(__DIR__) . '/database/attendance.sqlite'),
             'host' => env('DB_HOST', 'localhost'),
             'port' => (int) env('DB_PORT', '3306'),
             'name' => env('DB_NAME', 'rec_attendance'),

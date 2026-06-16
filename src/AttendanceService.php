@@ -82,13 +82,15 @@ class AttendanceService
 
     public static function recent(int $userId, int $days = 7): array
     {
+        $since = (new DateTimeImmutable())->modify("-{$days} days")->format('Y-m-d');
+
         $pdo = Database::getConnection();
         $stmt = $pdo->prepare(
             'SELECT * FROM attendance_records WHERE user_id = ?
-             AND local_work_date >= date("now", ?)
+             AND local_work_date >= ?
              ORDER BY local_work_date DESC, signed_at_utc DESC'
         );
-        $stmt->execute([$userId, '-' . $days . ' days']);
+        $stmt->execute([$userId, $since]);
 
         return $stmt->fetchAll();
     }
