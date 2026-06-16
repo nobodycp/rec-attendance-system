@@ -1,0 +1,4 @@
+﻿[PHP]
+; عدّل extension_dir حسب مسار PHP على جهازك
+extension=pdo_sqlite
+extension=sqlite3

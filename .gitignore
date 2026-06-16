@@ -1,0 +1,8 @@
+# بيانات محلية
+database/attendance.sqlite
+php.local.ini
+.env
+
+# نظام
+.DS_Store
+Thumbs.db
