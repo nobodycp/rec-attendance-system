@@ -1,4 +1,3 @@
-<?php $page = 'login'; ?>
 <div class="login-page">
     <div class="login-panel">
         <div class="login-panel__brand">

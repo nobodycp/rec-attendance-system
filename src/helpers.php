@@ -58,6 +58,9 @@ function e(?string $value): string
 function view(string $name, array $data = []): void
 {
     $data['name'] = $name;
+    if (!isset($data['page'])) {
+        $data['page'] = basename(str_replace('\\', '/', $name));
+    }
     extract($data);
     require dirname(__DIR__) . '/views/layout.php';
 }
