@@ -16,14 +16,18 @@ COPY . /var/www/html
 
 RUN chown -R www-data:www-data /var/www/html \
     && sed -i 's/\r$//' /var/www/html/docker/entrypoint.sh \
-    && chmod +x /var/www/html/docker/entrypoint.sh
+    && sed -i 's/\r$//' /var/www/html/docker/healthcheck.sh \
+    && chmod +x /var/www/html/docker/entrypoint.sh \
+    && chmod +x /var/www/html/docker/healthcheck.sh
 
+ENV PORT=80
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 
-EXPOSE 80
+EXPOSE 80 3000
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-    CMD curl -f http://localhost/ping.php || exit 1
+# Coolify يعيّن PORT=3000 — healthcheck يجب أن يطابق منفذ Apache
+HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=5 \
+    CMD /var/www/html/docker/healthcheck.sh
 
 ENTRYPOINT ["/var/www/html/docker/entrypoint.sh"]
 CMD ["apache2-foreground"]
