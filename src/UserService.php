@@ -89,6 +89,9 @@ class UserService
         if ($role === 'employee' && !$managerId) {
             throw new InvalidArgumentException('يجب تعيين مشرف أو مدير قسم للموظف.');
         }
+        if (!TimezoneHelper::isValid($timezone)) {
+            throw new InvalidArgumentException('المنطقة الزمنية غير صالحة.');
+        }
 
         $pdo = Database::getConnection();
         $exists = $pdo->prepare('SELECT id FROM users WHERE email = ?');
@@ -147,6 +150,9 @@ class UserService
         }
         if ($role === 'employee' && !$managerId) {
             throw new InvalidArgumentException('يجب تعيين مشرف للموظف.');
+        }
+        if (!TimezoneHelper::isValid($timezone)) {
+            throw new InvalidArgumentException('المنطقة الزمنية غير صالحة.');
         }
 
         $pdo = Database::getConnection();

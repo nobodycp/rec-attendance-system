@@ -48,6 +48,15 @@ class AccountService
         $pdo->prepare('UPDATE users SET email = ? WHERE id = ?')->execute([$email, $userId]);
     }
 
+    public static function updateTimezone(int $userId, string $timezone): void
+    {
+        if (!TimezoneHelper::isValid($timezone)) {
+            throw new InvalidArgumentException('المنطقة الزمنية غير صالحة.');
+        }
+
+        Database::getConnection()->prepare('UPDATE users SET timezone = ? WHERE id = ?')->execute([$timezone, $userId]);
+    }
+
     public static function uploadAvatar(int $userId, array $file): string
     {
         if (($file['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {

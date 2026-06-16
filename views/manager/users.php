@@ -65,19 +65,21 @@
                     <th>البريد</th>
                     <th>الدور</th>
                     <th>المشرف</th>
+                    <th>المنطقة الزمنية</th>
                     <th>الحالة</th>
                     <th>إجراء</th>
                 </tr>
             </thead>
             <tbody>
             <?php if (empty($users)): ?>
-                <tr><td colspan="6" class="table-empty">لا يوجد مستخدمون — أضف أول موظف من النموذج أعلاه.</td></tr>
+                <tr><td colspan="7" class="table-empty">لا يوجد مستخدمون — أضف أول موظف من النموذج أعلاه.</td></tr>
             <?php else: foreach ($users as $u): ?>
                 <tr>
                     <td><strong><?= e($u['name']) ?></strong></td>
                     <td dir="ltr"><?= e($u['email']) ?></td>
                     <td><?= e(RoleHelper::label($u['role'])) ?></td>
                     <td><?= e($u['manager_name'] ?? '—') ?></td>
+                    <td><?= e(TimezoneHelper::commonTimezones()[$u['timezone']] ?? $u['timezone']) ?></td>
                     <td>
                         <?php if ((int)$u['is_active'] === 1): ?>
                             <span class="badge badge-active">نشط</span>
@@ -86,9 +88,11 @@
                         <?php endif; ?>
                     </td>
                     <td>
-                        <?php if ((int)$u['id'] !== Auth::id()): ?>
                         <div class="actions-cell">
-                            <a href="<?= e(url('/manager/users/edit?id=' . (int)$u['id'])) ?>" class="btn btn-outline btn-sm">تعديل</a>
+                            <a href="<?= e(url('/manager/users/edit?id=' . (int)$u['id'])) ?>" class="btn btn-outline btn-sm">
+                                <?= (int)$u['id'] === Auth::id() ? 'تعديل حسابي' : 'تعديل' ?>
+                            </a>
+                            <?php if ((int)$u['id'] !== Auth::id()): ?>
                             <form method="post" action="<?= e(url('/manager/users/toggle')) ?>" data-confirm="تأكيد تغيير حالة المستخدم؟">
                                 <?= Csrf::field() ?>
                                 <input type="hidden" name="user_id" value="<?= (int)$u['id'] ?>">
@@ -101,8 +105,8 @@
                                 <button type="submit" class="btn btn-danger btn-sm">حذف</button>
                             </form>
                             <?php endif; ?>
+                            <?php endif; ?>
                         </div>
-                        <?php else: ?>—<?php endif; ?>
                     </td>
                 </tr>
             <?php endforeach; endif; ?>

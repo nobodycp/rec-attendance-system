@@ -5,7 +5,7 @@
 <div class="settings-page">
     <div class="page-header">
         <h1>إعدادات الحساب</h1>
-        <p class="page-header__subtitle">إدارة بريدك الإلكتروني وصورتك الشخصية وكلمة المرور.</p>
+        <p class="page-header__subtitle">إدارة بريدك الإلكتروني والمنطقة الزمنية وصورتك الشخصية وكلمة المرور.</p>
     </div>
 
     <div class="settings-layout">
@@ -45,6 +45,25 @@
                         <p class="form-hint">يُستخدم لتسجيل الدخول إلى النظام.</p>
                     </div>
                     <button type="submit" class="btn">حفظ البريد</button>
+                </form>
+            </div>
+
+            <div class="settings-section">
+                <h3 class="settings-section__title">المنطقة الزمنية</h3>
+                <form method="post" action="<?= e(url('/account/timezone')) ?>" class="settings-form">
+                    <?= Csrf::field() ?>
+                    <div class="form-group">
+                        <label class="form-label" for="account-timezone">المنطقة الزمنية</label>
+                        <select id="account-timezone" name="timezone" class="form-control" required>
+                            <?php foreach (TimezoneHelper::commonTimezones() as $tz => $label): ?>
+                            <option value="<?= e($tz) ?>" <?= ($user['timezone'] ?? '') === $tz ? 'selected' : '' ?>>
+                                <?= e($label) ?>
+                            </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <p class="form-hint">تُستخدم لتسجيل الحضور والانصراف وحساب يوم العمل.</p>
+                    </div>
+                    <button type="submit" class="btn">حفظ المنطقة الزمنية</button>
                 </form>
             </div>
 

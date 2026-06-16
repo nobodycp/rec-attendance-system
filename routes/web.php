@@ -103,6 +103,22 @@ return static function (string $route, string $method): void {
             redirect('/account/settings');
         })(),
 
+        $route === '/account/timezone' && $method === 'POST' => (function () {
+            Auth::requireLogin();
+            if (!Csrf::verify($_POST['csrf_token'] ?? null)) {
+                flash('error', 'انتهت صلاحية النموذج.');
+                redirect('/account/settings');
+            }
+            try {
+                AccountService::updateTimezone(Auth::id(), $_POST['timezone'] ?? '');
+                Auth::refreshSession();
+                flash('success', 'تم تحديث المنطقة الزمنية.');
+            } catch (Throwable $e) {
+                flash('error', $e->getMessage());
+            }
+            redirect('/account/settings');
+        })(),
+
         $route === '/health' && $method === 'GET' => (function () {
             header('Content-Type: application/json');
             $payload = ['status' => 'ok', 'db' => 'unknown'];

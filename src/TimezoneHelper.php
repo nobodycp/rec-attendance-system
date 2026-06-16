@@ -37,6 +37,7 @@ class TimezoneHelper
         return [
             'Asia/Riyadh' => 'الرياض (GMT+3)',
             'Asia/Damascus' => 'دمشق (GMT+3)',
+            'Asia/Gaza' => 'فلسطين (GMT+2/+3)',
             'Africa/Cairo' => 'القاهرة (GMT+2)',
             'Asia/Dubai' => 'دبي (GMT+4)',
             'Asia/Kuwait' => 'الكويت (GMT+3)',
@@ -44,5 +45,10 @@ class TimezoneHelper
             'Asia/Baghdad' => 'بغداد (GMT+3)',
             'UTC' => 'UTC',
         ];
+    }
+
+    public static function isValid(string $timezone): bool
+    {
+        return array_key_exists($timezone, self::commonTimezones());
     }
 }
